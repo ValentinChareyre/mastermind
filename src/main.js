@@ -1,15 +1,8 @@
-import { Application, Text } from './../node_modules/pixi.js/dist/pixi.min.mjs';
+import { Game } from './Game.js';
 
 (async () =>
 {
-    const app = new Application();
+    const game = new Game(document.getElementById("game-container"));
 
-    await app.init({ antialias: true, background: '#1099bb' });
-
-    document.getElementById("game-container").appendChild(app.canvas);
-
-    const text = new Text({ text : "Hello world", });
-    text.x = app.renderer.width / 2 - text.width / 2;
-    text.y = app.renderer.height / 2 - text.height / 2;
-    app.stage.addChild(text);
+    await game.init();
 })();
