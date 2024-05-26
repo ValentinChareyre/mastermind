@@ -1,4 +1,4 @@
-class Code extends Array {
+export class Code extends Array {
     constructor(length) {
         super(length);
     }
