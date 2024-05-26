@@ -1,3 +1,5 @@
+import { Code } from './Code.js';
+
 // This class has two methods:
 //      - generateSecretCode, which requires *length* (number of pegs in a code) and *colours* (number of colours options to choose from) to randomly create a Code array, named secretCode
 //      - checkCode, which compares an input given by the player (userCode) with the secretCode and returns testResult, an array of integers of the same length as userCode and secretCode:

@@ -1,3 +1,7 @@
+import { CodeMaster } from './CodeMaster.js';
+import { Code } from './Code.js';
+
+
 // This class handles game logic. The length (number of colour pegs in a code), colours (number of colours that can be chosen) and attempts (total number of attempts a player can have) define the game difficulty.
 // It has 6 methods:
 //  - startGame(), which starts the game, calls the secret code generation and start the loop
@@ -52,7 +56,7 @@
     
     checkCondition(userCode, secretCode) {
         
-        testResult = this.codeMaster.checkCode(userCode, secretCode);
+        let testResult = this.codeMaster.checkCode(userCode, secretCode);
         const isOne = (currentValue) => currentValue === 1;
         if (testResult.every(isOne)) {
             console.log("You won!");
