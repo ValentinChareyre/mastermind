@@ -17,10 +17,9 @@ export class CodeMaster {
     }
 
     /**
-     * 
      * @param {Code} userCode 
      * @param {Code} secretCode 
-     * @returns 
+     * @returns {Array<number>}
      */
     checkCode(userCode, secretCode) {
         const n = userCode.length;
