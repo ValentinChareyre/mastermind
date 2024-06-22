@@ -1,6 +1,7 @@
 import { Application, Text, Graphics } from '/node_modules/pixi.js/dist/pixi.min.mjs';
 import { GameRenderer } from "./GameRenderer.js";
 import { CodeRenderer } from './CodeRenderer.js';
+import { CodeMaster } from './CodeMaster.js';
 import { Code } from './Code.js';
 
 export class Game
@@ -14,6 +15,18 @@ export class Game
     /** @type {number} */
     #_timeSinceStartup;
 
+    /** @type {CodeMaster} */
+    #_codeMaster;
+
+    /** @type {Code} */
+    #_secretCode;
+    
+    /** @type {Code} */
+    #_userCode;
+
+    /** @type {CodeRenderer} */
+    #_codeRenderer;
+
     /**
      * @param {HTMLElement} rendererContainer
      */
@@ -22,6 +35,9 @@ export class Game
         this.#_application = new Application();
         this.#_gameRenderer = new GameRenderer(this.#_application, rendererContainer);
         this.#_timeSinceStartup = 0;
+        this.#_codeMaster = new CodeMaster();
+        this.#_secretCode = this.#_codeMaster.generateSecretCode(5, 6);
+        this.#_userCode = new Code(this.#_secretCode.length);
     }
 
     async init()
@@ -30,26 +46,41 @@ export class Game
 
         this.#_gameRenderer.init();
         
-        const code = Code.from([-1, -1, -1, -1]);
-        const codeRenderer = new CodeRenderer(code, 20, this.#_gameRenderer.width * 0.5);
-        codeRenderer.x = this.#_gameRenderer.width * 0.5;
-        codeRenderer.y = 100;
-        this.#_gameRenderer.add(codeRenderer);
+        this.#_codeRenderer = new CodeRenderer(this.#_userCode, 20, this.#_gameRenderer.width * 0.5);
+        this.#_codeRenderer.x = this.#_gameRenderer.width * 0.5;
+        this.#_codeRenderer.y = 100;
+        this.#_gameRenderer.add(this.#_codeRenderer);
+
+        this.#_codeRenderer.on('peg_clicked', index => this.#increaseDigit(index));
 
         // Main update loop
         this.#_application.ticker.add((ticker) => {
-            codeRenderer.update(ticker.deltaTime);
+            this.#_codeRenderer.update(ticker.deltaTime);
         });
+    }
 
-        document.addEventListener('keydown', (event) =>
+    /**
+     * @param {number} index 
+     */
+    #increaseDigit(index)
+    {
+        if (index >= 0 && index < this.#_userCode.length)
         {
-            const number = parseInt(event.key);
-            if (!isNaN(number) && number > 0 && number <= codeRenderer.value.length)
+            this.#_userCode.setDigit(index, (this.#_userCode.getDigit(index) + 1) % 6);
+
+            let drawButton = true;
+            for (let i = 0 ; i < this.#_userCode.length ; ++i)
             {
-                let value = codeRenderer.value;
-                value[number - 1] = (value[number - 1] + 1) % 6;
-                codeRenderer.value = value;
+                if (this.#_userCode.getDigit(i) < 0)
+                {
+                    drawButton = false;
+                    break;
+                }
             }
-        });
+            if (drawButton)
+            {
+                console.log("Draw Button");
+            }
+        }
     }
 }

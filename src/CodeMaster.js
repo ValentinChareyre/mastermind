@@ -11,24 +11,30 @@ export class CodeMaster {
     generateSecretCode(length, colours) {
         let secretCode = new Code(length);
         for (let i = 0; i < length; i++) {
-            secretCode[i] = Math.floor(Math.random()*colours);
+            secretCode.setDigit(i, Math.floor(Math.random()*colours));
         }
         return secretCode;
     }
 
+    /**
+     * 
+     * @param {Code} userCode 
+     * @param {Code} secretCode 
+     * @returns 
+     */
     checkCode(userCode, secretCode) {
         const n = userCode.length;
         let testResult = new Array(n);
 
-        for (let i = 0; i < n; i++) {
-            if (secretCode.includes(userCode[i])) {
-                if (userCode[i] === secretCode[i]) {
-                    testResult[i] = 1;
-                } else {
-                    testResult[i] = 2;
-                }
-            } else {
-                testResult[i] = 0;
+        for (let i = 0; i < n; i++)
+        {
+            if (userCode.getDigit(i) === secretCode.getDigit(i))
+            {
+                testResult[i] = 1;
+            }
+            else
+            {
+                testResult[i] = secretCode.contains(userCode.getDigit(i)) ? 2 : 0;
             }
         }
 

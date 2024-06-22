@@ -3,8 +3,8 @@ import { Code } from './Code.js';
 
 export class CodeRenderer extends Graphics
 {
-    /** @type {Array<number>} */
-    #_value;
+    /** @type {Code} */
+    #_code;
     
     /** @type {number} Space between pegs */
     #_gutter;
@@ -18,24 +18,6 @@ export class CodeRenderer extends Graphics
     /** @type {Array<number>} */
     #_currentPegRadii;
 
-    get value()
-    {
-        return Array.from(this.#_value);
-    }
-
-    set value(v)
-    {
-        this.#_value.forEach((digit, index) =>
-        {
-            if (this.#_value[index] != v[index])
-            {
-                this.#_currentPegRadii[index] = 0;
-            }
-        });
-        this.#_value = v;
-        this.#redraw();
-    }
-
     /**
      * @param {Code} code 
      * @param {number} pegRadius
@@ -45,15 +27,19 @@ export class CodeRenderer extends Graphics
     {
         super();
         this.#_gutter = code.length > 1 ? (width - pegRadius * code.length) / (code.length - 1) : 0;
-        this.#_value = code;
-        this.#_currentPegRadii = code.map(_ => 0);
+        this.#_code = code;
+        this.#_currentPegRadii = new Array(code.length);
+        this.#_currentPegRadii.fill(0);
         this.#_pegRadius = pegRadius;
         this.#_colorMap = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
         this.eventMode = 'static';
         this.cursor = 'pointer';
+        this.emit()
         this.on('click', this.#checkIfPegClicked, this);
 
         this.#redraw();
+
+        this.#_code.registerValueChangedCallback(() => this.#redraw());
     }
 
     update(deltaTime)
@@ -78,13 +64,15 @@ export class CodeRenderer extends Graphics
     #redraw()
     {
         this.clear();
-        
-        this.#_value.forEach((digit, index) => this.#drawPeg(index, digit));
+        for (let index = 0 ; index < this.#_code.length ; ++index)
+        {
+            this.#drawPeg(index, this.#_code.getDigit(index));   
+        }
     }
 
     #drawPeg(index, digit)
     {
-        const x = (index - (this.#_value.length - 1) / 2) * this.#_gutter;
+        const x = (index - (this.#_code.length - 1) / 2) * this.#_gutter;
         this.circle(x, 0, this.#_currentPegRadii[index])
             .fill({ color: digit >= 0 ? this.#_colorMap[digit] : 0x555555, alpha: 1 })
             .stroke({ width: 1, color: 0x222222 });
@@ -92,18 +80,22 @@ export class CodeRenderer extends Graphics
 
     #checkIfPegClicked(event)
     {
-        this.#_value.forEach((digit, index) => this.#checkPegHasBeenClicked(index, event));
+        for (let index = 0 ; index < this.#_code.length ; ++index)
+        {
+            this.#checkPegHasBeenClicked(index, event)   
+        }
     }
 
     #checkPegHasBeenClicked(index, event)
     {
-        const worldPegXPosition = this.x + (index - (this.#_value.length - 1) / 2) * this.#_gutter;
+        const worldPegXPosition = this.x + (index - (this.#_code.length - 1) / 2) * this.#_gutter;
         const worldPegYPosition = this.y;
         const sqrDistance = (worldPegXPosition - event.data.global.x) * (worldPegXPosition - event.data.global.x)
             + (worldPegYPosition - event.data.global.y) * (worldPegYPosition - event.data.global.y);
+        console.log(index + " " + sqrDistance);
         if (sqrDistance <= this.#_pegRadius * this.#_pegRadius)
         {
-            console.log("Peg " + index + " clicked");
+            this.emit('peg_clicked', index);
         }
     }
 }
